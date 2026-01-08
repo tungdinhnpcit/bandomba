@@ -1,0 +1,16 @@
+﻿services:
+  web-app:
+    image: bando:v2.9
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8080"
+    environment:
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: always
+  
+# docker save --output F:\Public\ApiDocker\bando_v2.9.tar bando
+
+# docker-compose up --force-recreate --build -d

@@ -1,0 +1,154 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@using BanDoMba.EF
+@{
+    ViewData["Title"] = "DANH SÁCH TRẠM";
+}
+@model IEnumerable<DeviceLocation>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<div class="text-center">
+    <div id="map" style="height: 90vh; width: 90vw;"></div>
+</div>
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            async function checkLocationPermission() {
+                try {
+                    const status = await navigator.permissions.query({ name: 'geolocation' });
+
+                    if (status.state === 'granted') {
+                        console.log("Permission already granted. Accessing location...");
+                        getLocation();
+                    } else if (status.state === 'prompt') {
+                        console.log("User hasn't decided yet. Prompt will show now.");
+                        getLocation();
+                    } else {
+                        console.log("Permission denied. You might need to guide the user to browser settings.");
+                    }
+
+                    // Listen for changes (e.g., if the user goes into settings and flips a switch)
+                    status.onchange = () => {
+                        console.log("Permission state changed to: ", status.state);
+                    };
+                } catch (error) {
+                    console.log("Permissions API not supported in this browser.");
+                }
+            }
+
+            checkLocationPermission();
+            var routingControl = null;
+
+            // Define your custom Red Icon
+            var redIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            function drawRoute(destLat, destLng, destName) {
+                if (!userLocation) {
+                    alert("Current location not found yet.");
+                    return;
+                }
+                    // Remove existing route if it exists
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+                   // Create the routing control and add it to the map
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLocation.lat, userLocation.lng), // Start: User
+                        L.latLng(destLat, destLng)                   // End: Marker
+                    ],
+                    // --- CUSTOM MARKER LOGIC ---
+                    createMarker: function(i, waypoint, n) {
+                        var markerOptions = {
+                            draggable: false,
+                        };
+
+                        // i === 0 is the starting point (Your location)
+                        if (i === 0) {
+                            markerOptions.icon = redIcon;
+                        }
+
+                        return L.marker(waypoint.latLng, markerOptions)
+                            .bindPopup(i === 0 ? "Bạn đang ở đây" : `Thông số:${destName}`);
+                    },
+                    lineOptions: {
+                        styles: [{ color: 'blue', opacity: 0.6, weight: 6 }]
+                    },
+                    routeWhileDragging: false,
+                    addWaypoints: false, // Prevent users from adding dots on the line
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    show: false // Set to true if you want a text-based turn-by-turn box
+                }).addTo(map);
+            }
+
+            var southWest = L.latLng(8.0, 102.0), // Góc Tây Nam Việt Nam
+            northEast = L.latLng(24.0, 110.0), // Góc Đông Bắc Việt Nam
+            bounds = L.latLngBounds(southWest, northEast);
+
+            // Initialize the map
+            var map = L.map('map',{
+                maxBounds: bounds,   // Giới hạn vùng di chuyển
+                maxBoundsViscosity: 1.0, // Ngăn bản đồ "bật" lại khi kéo quá biên
+                minZoom: 10,          // Không cho thu nhỏ quá mức
+                maxZoom: 20         // Không cho phóng to quá mức
+            });
+            var userLocation = null;
+
+
+             // Add the OpenStreetMap Tile Layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Locate the user
+            //map.locate({setView: true, maxZoom: 16});
+
+            // Convert C# Model to JavaScript JSON
+            var locations = @Html.Raw(Json.Serialize(Model));
+
+            if(location != null && locations.length > 0){
+
+                 var firstLocation = locations[0];
+
+                // Di chuyển tâm bản đồ về marker đầu tiên (Zoom level 15 tùy chỉnh)
+                map.setView([firstLocation.longitude, firstLocation.latitude], 10);
+                
+               // Loop through the data and add markers
+               locations.forEach(function (loc) {
+                   var marker = L.marker([loc.longitude, loc.latitude]).addTo(map);
+
+                   // Bind dynamic popup information
+                   marker.bindPopup(`
+                       <div style="text-align:center;">
+                           <h5 style="margin:0;">${loc.tenTram}</h5>
+                           <p style="font-size:12px;">${loc.moTa}</p>
+                       </div>
+                   `);
+
+               });
+            }
+            
+            map.on('locationfound', function(e) {
+               userLocation = e.latlng;
+            });
+
+            map.on('locationerror', function(e) {
+                console.log("Location access denied.");
+            });
+        });
+    </script>
+}

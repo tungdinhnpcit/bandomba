@@ -1,0 +1,56 @@
+### .NET Core ###
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+
+# MSBuild intermediate storage
+.ms-adorners/
+# Visual Studio cache/settings
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be filled with thousands of files
+**/packages/*
+!**/packages/build/
+
+# Publish output
+publish/
+*.azurepubxml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+### Nginx ###
+# Logs (standard location if you link them to your project)
+logs/
+*.log
+
+# Temporary files
+proxy_temp/
+client_body_temp/
+fastcgi_temp/
+uwsgi_temp/
+scgi_temp/
+
+### OS / Environment ###
+# Secret files (CRITICAL: keep your keys out of Git)
+.env
+appsettings.Development.json
+*.pfx
+*.pem
+
+# macOS / Windows fluff
+.DS_Store
+Thumbs.db

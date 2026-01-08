@@ -1,0 +1,6 @@
+version: "3.4"
+
+services:
+  nginx_bandomba:
+    ports:
+      - 443:443

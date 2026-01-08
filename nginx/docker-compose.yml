@@ -1,0 +1,17 @@
+version: "3.6"
+
+#Command build: docker-compose up --force-recreate --build -d
+#docker save -o F:\Public\ApiDocker\nginx_bandomba.1.1.tar.gz nginx_bandomba
+#docker image prune -f
+networks:
+  backend:
+
+services:
+  nginx_bandomba:
+    container_name: nginx_bandomba
+    image: ${DOCKER_REGISTRY-}nginx_bandomba:v1.3
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    networks:
+      - backend

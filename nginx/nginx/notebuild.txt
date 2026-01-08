@@ -1,0 +1,16 @@
+#Command build: docker-compose up --force-recreate --build -d
+#docker image prune -f
+
+docker save -o nginxbe_gscv.tar.gz nginxbe_gscv
+
+
+docker save -o gscv_be.tar.gz gscv_be
+
+docker save -o gscv_fe.tar.gz gscv_fe
+
+docker save -o apigateway.tar.gz apigateway
+
+docker save -o nginxbe.tar.gz nginxbe
+
+docker save -o race_fe.tar.gz race_fe
+docker save -o utils.tar.gz utils

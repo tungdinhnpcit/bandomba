@@ -1,0 +1,87 @@
+﻿@using BanDoMba.EF
+@{
+    ViewData["Title"] = "Home Page";
+}
+@model DataLocation
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+@* <link href="~/css/leaflet.css" rel="stylesheet" /> *@
+@* <link href="~/css/leaflet-routing-machine.css" rel="stylesheet" /> *@
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+<div class="text-center">
+    <div id="map" style="height: 90vh; width: 90vw;"></div>
+</div>
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    <script>
+        $(document).ready(function () {
+            var southWest = L.latLng(8.0, 102.0), // Góc Tây Nam Việt Nam
+            northEast = L.latLng(24.0, 110.0), // Góc Đông Bắc Việt Nam
+            bounds = L.latLngBounds(southWest, northEast);
+
+        // 1. Khởi tạo bản đồ
+        var map = L.map('map',{
+                maxBounds: bounds,   // Giới hạn vùng di chuyển
+                maxBoundsViscosity: 1.0, // Ngăn bản đồ "bật" lại khi kéo quá biên
+                minZoom: 10,          // Không cho thu nhỏ quá mức
+                maxZoom: 20         // Không cho phóng to quá mức
+            }).setView([21.0285, 105.8542], 13);
+        var routingControl = null;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+            var redIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+                    // 2. Hàm vẽ đường đi (Cập nhật đối số để linh hoạt)
+        function drawRoute(destLat, destLng, destName, startLat, startLng) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(startLat, startLng),
+                    L.latLng(destLat, destLng)
+                ],
+                createMarker: function (i, waypoint, n) {
+                    return L.marker(waypoint.latLng, {
+                        icon: i === 0 ? redIcon : new L.Icon.Default(),
+                        draggable: false
+                    }).bindPopup(i === 0 ? "Vị trí của bạn" : `Trạm: ${destName}`);
+                },
+                lineOptions: {
+                    styles: [{ color: 'blue', opacity: 0.6, weight: 6 }]
+                },
+                addWaypoints: false,
+                show: false
+            }).addTo(map);
+        }
+        
+        var datalocations = @Html.Raw(Json.Serialize(Model))
+        if (datalocations && datalocations.listTba.length > 0) {
+
+            var currentmarker = L.marker([datalocations.latitude, datalocations.longitude], { icon: redIcon }).addTo(map);
+            currentmarker.bindPopup("Vị trí thực tế của bạn").openPopup();
+
+            datalocations.listTba.forEach(function (loc) {
+                var marker = L.marker([loc.longitude, loc.latitude]).addTo(map);
+                marker.bindPopup(`<b>${loc.tenTram}</b><br>${loc.moTa}`);
+
+                drawRoute(loc.longitude, loc.latitude, loc.tenTram, datalocations.latitude, datalocations.longitude);
+            });
+
+            // Di chuyển tới trạm đầu tiên
+            map.setView([datalocations.listTba[0].longitude, datalocations.listTba[0].latitude], 15);
+        }
+        });
+    </script>
+}
