@@ -4,8 +4,6 @@
 }
 @model DataLocation
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-@* <link href="~/css/leaflet.css" rel="stylesheet" /> *@
-@* <link href="~/css/leaflet-routing-machine.css" rel="stylesheet" /> *@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 <div class="text-center">
     <div id="map" style="height: 90vh; width: 90vw;"></div>
@@ -73,14 +71,15 @@
             currentmarker.bindPopup("Vị trí thực tế của bạn").openPopup();
 
             datalocations.listTba.forEach(function (loc) {
-                var marker = L.marker([loc.longitude, loc.latitude]).addTo(map);
+                var marker = L.marker([loc.latitude, loc.longitude]).addTo(map);
                 marker.bindPopup(`<b>${loc.tenTram}</b><br>${loc.moTa}`);
 
-                drawRoute(loc.longitude, loc.latitude, loc.tenTram, datalocations.latitude, datalocations.longitude);
+                drawRoute(loc.latitude, loc.longitude, loc.tenTram, datalocations.latitude, datalocations.longitude);
             });
 
             // Di chuyển tới trạm đầu tiên
-            map.setView([datalocations.listTba[0].longitude, datalocations.listTba[0].latitude], 15);
+            //map.setView([datalocations.listTba[0].longitude, datalocations.listTba[0].latitude], 15);
+            map.setView([21.7036, 104.878], 15);
         }
         });
     </script>

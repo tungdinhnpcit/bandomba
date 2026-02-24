@@ -12,6 +12,8 @@ var apiUrl = builder.Configuration.GetConnectionString("ApiUrl");
 builder.Services.AddScoped<IMbaService>(sp => new MbaService(apiUrl??""));
 var app = builder.Build();
 
+app.UsePathBase("/map");
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
